@@ -1,0 +1,186 @@
+/*====================================== reset.css is here ========================================*/
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td { margin:0; padding:0;}
+table {	border-collapse:collapse; border-spacing:0;}
+fieldset,img { border:0; }
+address,caption,cite,code,dfn,strong,th,var {font-style:normal;}
+ol,ul { list-style:none;}
+caption,th {text-align:left;}
+h1,h2,h3,h4,h5,h6 {	font-size:100%;	font-weight:bold;}
+q:before,q:after {content:'';}
+abbr,acronym { border:0;}
+.clear{clear:both; font-size:0px;line-height:0px;}
+/**************************************************************************************/
+a											{color:#000; text-decoration:none; outline:0 none;}
+a:hover										{color:#000;  text-decoration:none;}
+h1											{font-size:24px;}
+h2											{font-size:22px;}
+h3											{font-size:18px;}
+h4											{font-size:16px;}
+h5											{font-size:14px;}
+h6											{font-size:12px;}
+/*----------------------------------------------------------------------------------*/
+html 											{}
+body										{color:#333333; font-family:"Arial", Verdana, Tahoma; font-size:12px;}
+
+.answer_box input[type=radio] {
+	position:absolute;
+	opacity:0;
+}
+.genopt label {
+	cursor:pointer;
+	font-size:0;
+}
+.genquestlist ul li.example .answer_box label {
+	cursor:default;
+}
+.writingbox h1 {
+	color:#333333;
+	font-size:13.5px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	line-height:16px;
+	padding-bottom:10px;
+}
+.writingbox p {
+	color:#333333;
+	font-size:13.5px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:normal;
+	line-height:16px;
+	margin-bottom:0;
+	padding-bottom:10px;
+}
+.writingemail_ques {
+	width:443px;
+	height:452px;
+	background:url(media/letterquestion.jpg) no-repeat left top;
+	float:left;
+}
+
+.word-grid {
+	width:440px;
+	height:450px;
+	background:url(media/notestickerbg.jpg) no-repeat left top;
+	float:left;
+}
+
+.word-grid > table {
+	margin-left: 30px;
+}
+
+.search-instruct {
+	font-size: 1.25em !important;
+	vertical-align: center;
+	padding-top: 50px;
+}
+
+.write_email {
+	width:451px;
+	height:448px;
+	background:url(media/writeemailbg.jpg) no-repeat left top;
+	float:right;
+	position:relative;
+	left:4px;
+}
+.writing_wrap {
+	padding-top:16px;
+}
+.email_para {
+	width:390px;
+	height:391px;
+	margin-left: 21px;
+    margin-top: 36px;
+}
+.email_header {
+	padding-bottom:10px;
+}
+.email_header p {
+	color:#333333;
+	font-size:12.75px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:normal;
+	line-height:16px;
+	margin-bottom:0;
+	padding-bottom:0;
+}
+.email_header p strong {
+	font-weight:bold;
+}
+.email_notes {
+	padding-bottom:20px;
+}
+.email_notes p {
+	color:#333333;
+	font-size:12.75px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:normal;
+	line-height:16px;
+	margin-bottom:0;
+}
+.email_notes p span {
+	background:#d9ebff;
+}
+.email_notes .handwriting {
+	color:#5b8ac8;
+	font-size:16px;
+	font-family: 'Schoolbell', cursive;
+	font-weight:normal;
+	line-height:16px;
+}
+.write_to {
+	width:148px;
+	height:20px;
+	background:#ffffff;
+	border:none;
+	border-radius:0;
+	box-shadow:none;
+	-webkit-appearance:none;
+	margin-bottom:8px;
+	color:#333333;
+	font-size:12.75px;
+	font-family:Arial, Helvetica, sans-serif;
+	line-height:20px;
+}
+.write_subject {
+	width:368px;
+	height:20px;
+	background:#ffffff;
+	border:none;
+	border-radius:0;
+	box-shadow:none;
+	-webkit-appearance:none;
+	color:#333333;
+	font-size:12.75px;
+	font-family:Arial, Helvetica, sans-serif;
+	line-height:20px;
+}
+.write_headeremail {
+    padding-left: 68px;
+    padding-top: 10px;
+	margin-bottom:13px;
+}
+.write_emailtext textarea {
+	width:447px;
+	height:358px;
+	background:none;
+	border:none;
+	border-radius:0;
+	box-shadow:none;
+	-webkit-appearance:none;
+	color:#333333;
+	font-size:12.75px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:normal;
+	line-height:19px;
+	margin-left:2px;
+	box-sizing:border-box;
+	padding-left:8px;
+	padding-right:22px;
+	padding-top:6px;
+	resize:none;
+}
+.write_email .word_counter {
+	position:absolute;
+	left:10px;
+	bottom:-32px;
+}
