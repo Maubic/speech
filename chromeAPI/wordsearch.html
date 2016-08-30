@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>MOE Speech Demo</title>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<style type="text/css">
+	.controllers {
+		text-align: center;
+	}
+  body {
+    font-weight: bold;
+  }
+	button {
+		background-color: white;
+	    border: rgba(0,0,0,0);
+	    border-radius: 50%;
+	    color: white;
+	    text-align: center;
+	}
+	button:focus {
+		outline-color: rgba(0,0,0,0) !important;
+	}
+	button:hover {
+		background-color: rgba(20,20,20,0.1) !important;
+	}
+
+  td {
+    padding: 4px !important;
+  }
+
+</style>
+<div style="margin:25px;text-align:center;font-weight:bold;font-size:large;">
+	<p>Word Search</p>
+	<!--<p>Press the button again when you're done dictating.</p>-->
+</div>
+<div class="writing_wrap" style="margin:25px;text-align:center;">
+	<section id="letter_table" class="word-grid" style="margin-left:25px;">
+	</section>
+  <section class="search-instruct" style="margin-left:25px;">
+  <p>Try to find the name of 8 places in the word grid</p>
+  <p>If you find one, click on the microphone and say it</p>
+  <p>The word will be highlighted if you say it correctly.</p>
+  </section>
+	<div class="clear"></div>
+</div>
+<div class="controllers">
+	<button id="start_button" onclick="start(event)">
+    	<img id="button_gif" src="mic.gif" style="border-radius:50%;" alt="Record">
+    </button>
+	<p>You can say 'Stop Speaking' to stop dictation</p>
+</div>
+
+<script type="text/javascript">
+  var recognition;
+  var active = false;
+  var map = {};
+  var table;
+
+  function processFinal(result) {
+  	if(!active) return;
+  	var transcript = result.transcript;
+  	console.info('final: ', transcript);
+  	for(w in map) {
+      if(transcript.toUpperCase().search(w) >= 0){
+        highlight(map[w].start, map[w].end, 'blue', table);
+      }
+    }
+  }
+
+  function processInterim(result) {
+  	if(result.transcript.match(/stop speaking/i))  {
+  		recognition.stop();
+  		return;
+  	}
+  }
+
+  function setup(options) {
+    if ( !window.webkitSpeechRecognition ) {
+    	button_gif.src = 'mic-slash.gif';
+      	start_button.disabled = true;
+      	alert('Browser incompatibility. Please use Chrome v25 or greater');
+      	return null;
+    }
+    var opts;
+    if( options ) 
+    	opts = options;
+    else
+    	opts = {};
+    if(!recognition) {
+      recognition = new webkitSpeechRecognition();
+      recognition.onend = function(event) {
+      	active = false;
+      	button_gif.src = 'mic.gif';
+      }
+      recognition.onerror = function(event) {}
+      recognition.onresult = function(ev) {
+        var result;
+        for (var i = ev.resultIndex; i < ev.results.length; ++i) {
+          result = ev.results[i][0];
+          result.timestamp = ev.timeStamp;
+          if (ev.results[i].isFinal)
+            processFinal(result);
+          else {
+          	processInterim(result);
+          }
+        }
+      }
+      recognition.onstart = function(event) {
+      	button_gif.src = 'mic-animate.gif';
+  		active = true;
+      }
+
+    }
+    else 
+      recognition.stop();
+
+    recognition.lang = opts.lang || 'en-GB';
+    recognition.continuous = !!opts.continuous ||true;
+    recognition.interimResults = !!opts.interim||true;
+
+    return recognition;
+  }
+
+  function start() {
+  	if(active) {
+  		recognition.stop();
+  		return;
+  	}
+  	recognition.start();
+  }
+
+  var words = ['California',
+               'Minnesota', 'Newfoundland',
+               'Spain', 'Ethiopia',
+               'Europe', 'Germany',
+               'Jersey', 'London', 
+               'Austin', 'Scotland',
+               'Wales', 'Norway',
+               'France', 'Oxford',
+               'Cambridge', 'Canada',
+               'Australia', 'Seoul',
+               'Moscow', 'Indiana'
+               ]
+
+  function randomSelect(list, total) {
+    if (list.length <= total) return list;
+    //copy list and reduce the copy as items are selected 
+    var smaller = list.slice();
+    var selected = new Array(total);
+    var rand, i = 0;
+    while(i < total) {
+      rand = Math.floor((smaller.length-1)*Math.random())
+      selected[i++] = smaller.splice(rand,1)[0];
+    }
+    return selected
+  }
+
+  function randomFill(list, table) {
+    var nrows = table.rows.length;
+    var ncols = table.rows[0].cells.length;
+    var horizontal, fits = false;
+    var word, row, col;
+    var map = {};
+    
+    for( var w in list) {
+      word = list[w].toUpperCase();
+     // place the word in the grid randomly 
+      col = Math.floor((ncols-1)*Math.random());
+      row = Math.floor((nrows-1)*Math.random());
+   	  // do this until word fits 
+      while(true) {
+        // horizontal if length is even. TODO: randomize it 
+        horizontal = word.length % 2 === 0;
+        // does the word fit in the coords
+        if(horizontal) {
+          fits = (word.length <= (ncols - col))
+        } else { 
+          fits = (word.length <= (nrows - row))
+        }
+        if (!fits) {
+         // selection of new coords could be random again...
+      	 // but this is probably faster 
+          if(horizontal) 
+            col = ncols - word.length - 2;
+          else 
+            row = nrows - word.length - 2;
+          continue;
+        }
+	      var start, end;
+	    
+	      start = {'x':col, 'y':row};
+	      if(horizontal){
+	        end = {'x':col + word.length - 1, 'y':row}
+	      }
+	      else {
+	        end = {'x':col, 'y':row  + word.length - 1}
+	      }
+	
+	      // does it intersect with a word already in the grid? 
+	      var other, collision = false;
+	      for(var k in map) {
+	        other = map[k];
+	        collision = detectCollision(start, end, other.start, other.end);
+	        if(collision) {
+	          if(horizontal) {
+	        	// selection of new coords could be random again...
+	           	 // but this is probably faster 
+	            row += 2;
+	            if (row >= nrows) row = 0;
+	          } else {
+	            col += 2;
+	            if (col >= ncols) col = 0;
+	          }
+	          break;
+	        }
+	      } 
+	      // if there is a collision, try again
+	      if (collision) {
+	        console.info('collision >> row,col : ', word, ' >> ', row,col)
+	       	continue;
+	      } 
+	      map[word] = {'start': start, 'end':end}
+	      
+	      for(var i = 0; i < word.length; ++i){
+	        if(horizontal) {
+	          table.rows[row].cells[col+i].innerHTML = word[i];
+	        } else {
+	          table.rows[row+i].cells[col].innerHTML = word[i];
+	        }
+	      }
+	      // highlight now for testing purposes: 
+	     // TODO: remove (otherwise it's not a puzzle)
+	      highlight(map[word].start, map[word].end, 'red', table);
+	      break;
+	    } // end while loop 
+    } //end for loop 
+
+    return map;
+  }
+
+  function randomPopulate(table) {
+    var nrows = table.rows.length;
+    var ncols;
+    var alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var maxidx = alpha.length - 1;
+    var rand;
+    for(var r = 0; r < nrows; ++r) {
+      ncols = table.rows[r].cells.length;
+      for(var c = 0; c < ncols; ++c) {
+        rand = Math.floor(maxidx*Math.random());
+        table.rows[r].cells[c].innerHTML = alpha[rand];
+      }
+    }
+    return table;
+  }
+
+  function detectCollision(s0,e0,s1,e1){
+    //collide horizontally?
+    var xcol;
+    var sx0 = Math.min(s0.x,e0.x);
+    var ex0 = Math.max(s0.x,e0.x);
+    var sx1 = Math.min(s1.x,e1.x);
+    var ex1 = Math.max(s1.x,e1.x);
+    xcol  = sx0 <= ex1 && ex0 >= sx1;
+    xcol |= sx0 >= sx1 && ex0 <= ex1;
+    //collide vertically ?
+    var ycol;
+    var sy0 = Math.min(s0.y,e0.y);
+    var ey0 = Math.max(s0.y,e0.y);
+    var sy1 = Math.min(s1.y,e1.y);
+    var ey1 = Math.max(s1.y,e1.y);
+    ycol  = sy0 <= ey1 && ey0 >= sy1;
+    ycol |= sy0 >= sy1 && ey0 <= ey1;
+
+    return !!(xcol && ycol);
+  }
+
+  function createTable(nrows,ncols) {
+    var table = document.createElement('table');
+    var row, col;
+    for(var r = 0; r < nrows; ++r) {
+      row = table.insertRow();
+      for(var c = 0; c < ncols; ++c) {
+        col = row.insertCell();
+      }
+    }
+    return table;
+  }
+
+  function highlight (start,end, color, table) {
+    for(var y = start.y; y <= end.y; ++y){
+      for(var x = start.x; x <= end.x; ++x) {
+        table.rows[y].cells[x].style.color = color;
+      }
+    }
+  }
+
+  table = createTable(20,20);
+  randomPopulate(table);
+  map = randomFill(randomSelect(words,8), table);
+
+  letter_table.appendChild(table);
+  recognition = setup();
+
+</script>

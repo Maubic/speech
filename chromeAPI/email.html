@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>MOE Speech Demo</title>
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<style type="text/css">
+	.controllers {
+		text-align: center;
+	}
+	button {
+		background-color: white;
+	    border: rgba(0,0,0,0);
+	    border-radius: 50%;
+	    color: white;
+	    text-align: center;
+	}
+	button:focus {
+		outline-color: rgba(0,0,0,0) !important;
+	}
+	button:hover {
+		background-color: rgba(20,20,20,0.1) !important;
+	}
+</style>
+<div style="margin:25px;text-align:center;font-weight:bold;font-size:medium;">
+	<p>Respond to the following email using your voice</p>
+	<!--<p>Press the button again when you're done dictating.</p>-->
+</div>
+<div class="writing_wrap" style="margin:25px;">
+	<section class="writingemail_ques" style="margin-left:25px;">
+		<div style="overflow: hidden;" class="email_para">
+			<div class="email_header">
+				<p><strong>From: </strong>Kris</p>
+				<p><strong>Subject: </strong>Our holiday </p>
+			</div>
+			<div class="email_notes">
+				<p>Hi,</p> <p>I’m thinking about our camping trip this weekend. First of all, I’m not sure how we’re going to get to the campsite &ndash; it’s too far to go by bike. <span class="highlight">How do you think we should get there?</span></p> <p class="handwriting">Suggest…</p> <p>You know I’ve never been camping before. <span class="highlight">Is there anything I should bring with me?</span></p> <p class="handwriting">Say what and why</p> <p>Finally, I’m not busy next week, so <span class="highlight">we can stay a bit longer if you want.</span></p> <p class="handwriting">No, because…</p> <p>See you soon,</p> <p>Jay</p>
+			</div>
+		</div>    
+	</section>
+	<section class="write_email" style="margin-right:25px;">
+		<div class="write_headeremail">
+			<div class="write_toinput">
+				<input type="text" disabled="" value="Kris" title="mailto" name="write_to" class="write_to">
+			</div>
+			<div class="write_subject">
+				<input type="text" disabled="" value="Re: Our holiday " title="mail subject" name="write_subject" class="write_subject">
+			</div>
+		</div>
+		<div class="write_emailtext">
+			<textarea placeholder="Click the microphone to start" title="mail text" id="response_area" readonly=""></textarea>
+		</div>
+	</section>
+	<div class="clear"></div>
+</div>
+<div class="controllers">
+	<button id="start_button" onclick="start(event)">
+    	<img id="button_gif" src="mic.gif" style="border-radius:50%;" alt="Record">
+    </button>
+	<p>You can say 'period', 'exclamation mark', 'question mark' and 'new line' to
+		add '.', '!', '?', or a new line to the body of your text.</p>
+	<p>You can say 'Stop Speaking' to stop dictation</p>
+</div>
+
+<script type="text/javascript">
+  var recognition;
+  var active = false;
+  var consolidated = '';
+  var temp = '';
+
+  function processFinal(result) {
+  	if(!active) return;
+  	var transcript = result.transcript;
+  	console.info('final: ', transcript);
+  	var lastchar = transcript[transcript.length - 1];
+  	if(lastchar === '\n') 
+  		consolidated += String.fromCharCode(182);
+  	consolidated += transcript;
+    response_area.value = consolidated;
+    temp = '';
+  }
+
+  function processInterim(result) {
+  	if(result.transcript.match(/stop speaking/i))  {
+  		recognition.stop();
+  		return;
+  	}
+  	response_area.value = consolidated + result.transcript;
+  }
+
+  function setup(options) {
+    if ( !window.webkitSpeechRecognition ) {
+    	button_gif.src = 'mic-slash.gif';
+      	start_button.disabled = true;
+      	alert('Browser incompatibility. Please use Chrome v25 or greater');
+      	return null;
+    }
+    var opts;
+    if( options ) 
+    	opts = options;
+    else
+    	opts = {};
+    if(!recognition) {
+      recognition = new webkitSpeechRecognition();
+      recognition.onend = function(event) {
+      	active = false;
+      	button_gif.src = 'mic.gif';
+      	response_area.value = consolidated.replace(/stop speaking/i, '');
+      }
+      recognition.onerror = function(event) {}
+      recognition.onresult = function(ev) {
+        var result;
+        temp = '';
+        for (var i = ev.resultIndex; i < ev.results.length; ++i) {
+          result = ev.results[i][0];
+          result.timestamp = ev.timeStamp;
+          if (ev.results[i].isFinal)
+            processFinal(result);
+          else {
+          	temp += result.transcript;
+          	processInterim({transcript:temp});
+          }
+        }
+      }
+      recognition.onstart = function(event) {
+      	button_gif.src = 'mic-animate.gif';
+  		response_area.innerHTML = '';
+  		consolidated = ''; temp = '';
+  		response_area.placeholder="Start speaking"
+  		active = true;
+      }
+
+    }
+    else 
+      recognition.stop();
+
+    recognition.lang = opts.lang || 'en-GB';
+    recognition.continuous = !!opts.continuous ||true;
+    recognition.interimResults = !!opts.interim||true;
+
+    return recognition;
+  }
+
+  function start() {
+  	if(active) {
+  		recognition.stop();
+  		return;
+  	}
+  	recognition.start();
+  }
+
+  recognition = setup();
+
+</script>
